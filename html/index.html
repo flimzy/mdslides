@@ -13,16 +13,16 @@
 
 <div id="header">
     <span class="menu left">
-        <span class="fa fa-angle-down"></span>
+        <a href="blank:"><span class="fa fa-angle-down" id="preview-toggle"></span></a>
     </span>
     <span class="menu right">
-        <span class="fa fa-folder-open-o"></span>
+        <a href="blank:"><span class="fa fa-folder-open-o" id="open-slideshow"></span></a>
     </span>
-    <div class="title">Markdown Slide Show</div>
+    Markdown Slide Show
 </div>
 
 <div id="container">
-    <div id="preview">
+    <div id="preview" class="hidden">
         Thumbnail previews
     </div>
 
@@ -30,30 +30,26 @@
         <span id="wait-message">
             <span class="fa fa-spinner fa-pulse fa-3x fa-fw"></span>Application is initializing...
         </span>
-        <span style="display: none" id="ready-content">
-            Content content content
-            <ul>
-                <li>one
-                <li>two
-                <li>three
-            </ul>
+        <span class="hidden" id="ready-content">
+            You must load a slide show by clicking the <span class="fa fa-folder-open-o"></span> icon in the top right.
         </span>
     </div>
 </div>
 
 <div id="footer">
     <span class="menu left">
-        <span id="nav-prev">
-            <span class="fa fa-arrow-circle-left fa-2x"></span>
+        <span id="nav-prev" class="disabled">
+            <span class="fa fa-step-backward fa-2x"></span>
             <span id="nav-prev-title">Previous</span>
         </span>
     </span>
     <span class="menu right">
-        <span id="nav-next">
+        <span id="nav-next" class="disabled">
             <span id="nav-next-title">Next</span>
-            <span class="fa fa-arrow-circle-right fa-2x"></span>
+            <span class="fa fa-step-forward fa-2x"></span>
         </span>
     </span>
+    <span id="play-pause" class="fa fa-play fa-2x disabled"></span>
 </div>
 
 

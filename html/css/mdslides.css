@@ -16,15 +16,20 @@ html, body {
     overflow: hidden;
     padding: 2px;
     color: #eeeeee;
+    font-size: 1.25em;
+    font-weight: bold;
+    text-align: center;
 }
 
 #footer {
     position: fixed;
+    padding: 2px;
     bottom: 0;
     width: 100%;
     background: #000000;
     color: #cccccc;
     overflow: hidden;
+    text-align: center;
 }
 
 #container {
@@ -51,12 +56,6 @@ html, body {
     overflow: auto;
 }
 
-.title {
-    font-size: 1.25em;
-    font-weight: bold;
-    text-align: center;
-}
-
 .menu.left {
     padding-left: 10px;
     float: left;
@@ -72,5 +71,14 @@ html, body {
 }
 
 .hidden {
-    display: none !important;
+    display: none;
+}
+
+.menu a {
+    text-decoration: inherit;
+    color: inherit;
+}
+
+.disabled {
+    opacity: 0.5;
 }

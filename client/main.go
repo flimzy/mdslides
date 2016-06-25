@@ -25,6 +25,7 @@ func main() {
 			resize()
 			jQuery(window).Resize(resize)
 			jQuery("#wait-message").Hide()
+			jQuery("#ready-content").Show()
 		}()
 	})
 }

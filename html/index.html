@@ -12,7 +12,13 @@
 <body>
 
 <div id="header">
-    Header
+    <span class="menu left">
+        <span class="fa fa-angle-down"></span>
+    </span>
+    <span class="menu right">
+        <span class="fa fa-folder-open-o"></span>
+    </span>
+    <div class="title">Markdown Slide Show</div>
 </div>
 
 <div id="container">
@@ -21,17 +27,33 @@
     </div>
 
     <div id="content">
-        Content content content
-        <ul>
-            <li>one
-            <li>two
-            <li>three
-        </ul>
+        <span id="wait-message">
+            <span class="fa fa-spinner fa-pulse fa-3x fa-fw"></span>Application is initializing...
+        </span>
+        <span style="display: none" id="ready-content">
+            Content content content
+            <ul>
+                <li>one
+                <li>two
+                <li>three
+            </ul>
+        </span>
     </div>
 </div>
 
 <div id="footer">
-    Footer
+    <span class="menu left">
+        <span id="nav-prev">
+            <span class="fa fa-arrow-circle-left fa-2x"></span>
+            <span id="nav-prev-title">Previous</span>
+        </span>
+    </span>
+    <span class="menu right">
+        <span id="nav-next">
+            <span id="nav-next-title">Next</span>
+            <span class="fa fa-arrow-circle-right fa-2x"></span>
+        </span>
+    </span>
 </div>
 
 

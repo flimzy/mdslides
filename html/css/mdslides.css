@@ -3,6 +3,8 @@ html, body {
     padding: 0;
     height: 100%;
     width: 100%;
+    font-family: sans-serif;
+    font-size: 16pt;
 }
 
 #header {
@@ -10,14 +12,19 @@ html, body {
     top: 0;
     height: auto;
     width: 100%;
-    background: red;
+    background: #2d3e50;
+    overflow: hidden;
+    padding: 2px;
+    color: #eeeeee;
 }
 
 #footer {
     position: fixed;
     bottom: 0;
     width: 100%;
-    background: blue;
+    background: #000000;
+    color: #cccccc;
+    overflow: hidden;
 }
 
 #container {
@@ -32,6 +39,8 @@ html, body {
     width: 10%;
     height: 100%;
     background: #aaffff;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 #content {
@@ -39,4 +48,29 @@ html, body {
     right: 0;
     height: 100%;
     background: #ffaaff;
+    overflow: auto;
+}
+
+.title {
+    font-size: 1.25em;
+    font-weight: bold;
+    text-align: center;
+}
+
+.menu.left {
+    padding-left: 10px;
+    float: left;
+}
+
+.menu.right {
+    padding-right: 10px;
+    float: right;
+}
+
+.nav {
+    font-size: 3em;
+}
+
+.hidden {
+    display: none !important;
 }

@@ -30,6 +30,7 @@ www: www/client.js
 	mkdir -p www
 	cp -a html/* www
 	cp -a vendor/*/* www
+	cp -a slides www/slides
 
 client.js: node_modules client/main.go client/main.inc.js
 	gopherjs build client/* -o client.js

@@ -34,6 +34,7 @@ type Slide struct {
 
 var slides []*Slide
 var slideInitDone <-chan struct{}
+var scrollBarWidth int = 17 // Better to read this from the browser, but how?
 
 func init() {
 	done := make(chan struct{})
@@ -47,14 +48,12 @@ func init() {
 }
 
 func main() {
-	fmt.Printf("Before ready\n")
 	jQuery(document).Ready(func() {
 		go func() {
-			fmt.Printf("Ready\n")
 			resize()
 			jQuery(window).Resize(resize)
 			jQuery("#preview-toggle").On("click", previewToggle)
-			jQuery("#container").On("click", fullScreen)
+			jQuery("#content").On("click", fullScreen)
 			jQuery("#handle").On("click", showHeader) // For touch screens
 			jQuery("#handle").On("mouseover", showHeader)
 
@@ -76,48 +75,52 @@ func log(message string) {
 }
 
 func resize() {
-	headerHeight := jQuery("#header").OuterHeight()
-	bodyHeight := jQuery("body").Height()
-	footerHeight := jQuery("#footer").OuterHeight()
-	container := jQuery("#container")
-	contentHeight := bodyHeight - headerHeight - footerHeight
-	container.SetHeight(strconv.Itoa(contentHeight))
-	container.SetCss(map[string]int{"top": headerHeight})
-
-	var previewWidth int
+	body := jQuery("body")
 	preview := jQuery("#preview")
-	previewWidth = preview.OuterWidth()
-	fmt.Printf("preview width = %d\n", previewWidth)
-	bodyWidth := jQuery("body").Width()
-	contentWidth := bodyWidth - previewWidth
-	thumbs := jQuery("div.thumbnail")
-	iframes := jQuery("iframe.thumbnail")
 
-	iframes.SetWidth(strconv.Itoa(contentWidth))
-	iframes.SetHeight(strconv.Itoa(contentHeight))
+	bodyHeight := body.OuterHeight()
+	headerHeight := jQuery("#header").OuterHeight()
+	footerHeight := jQuery("#footer").OuterHeight()
 
-	thumbWidth := preview.InnerWidth() - 28
-	thumbs.SetWidth(strconv.Itoa(thumbWidth))
-	thumbHeight := bodyHeight / (bodyWidth / thumbWidth)
-	thumbs.SetHeight(strconv.Itoa(thumbHeight))
-	fmt.Printf("Prev Width: %d\n", preview.InnerWidth())
-	fmt.Printf("Cont: %dx%d\nThumb: %dx%d\n", contentWidth, contentHeight, thumbWidth, thumbHeight)
+	// Set Preview column dimensions
+	thumb := jQuery("div.thumbnail").First()
+	previewWidth := thumb.OuterWidth() + getCSSpx(thumb, "marginRight") + getCSSpx(thumb, "marginLeft") + scrollBarWidth
+	previewHeight := bodyHeight - headerHeight - footerHeight
+	preview.SetCss("top", headerHeight)
+	preview.SetHeight(fmt.Sprintf("%dpx", previewHeight))
+	preview.SetWidth(fmt.Sprintf("%dpx", previewWidth))
+}
+
+func getCSSpx(elem jquery.JQuery, tag string) int {
+	px := elem.Css(tag)
+	val, err := strconv.Atoi(strings.TrimSuffix(px, "px"))
+	if err != nil {
+		panic(fmt.Sprintf("Cannot convert `%s` to integer: %s", px, err))
+	}
+	return val
 }
 
 func previewToggle(event *js.Object) {
 	event.Call("preventDefault")
-	toggle := jQuery("#preview-toggle")
-	preview := jQuery("#preview")
-	if preview.Is(":visible") {
-		preview.Hide()
-		toggle.AddClass("fa-angle-down")
-		toggle.RemoveClass("fa-angle-up")
+	if jQuery("#preview").Is(":visible") {
+		previewHide()
 	} else {
-		preview.Show()
-		toggle.AddClass("fa-angle-up")
-		toggle.RemoveClass("fa-angle-down")
+		previewShow()
 	}
-	resize()
+}
+
+func previewHide() {
+	jQuery("#preview").Hide()
+	toggle := jQuery("#preview-toggle")
+	toggle.AddClass("fa-angle-down")
+	toggle.RemoveClass("fa-angle-up")
+}
+
+func previewShow() {
+	jQuery("#preview").Show()
+	toggle := jQuery("#preview-toggle")
+	toggle.AddClass("fa-angle-up")
+	toggle.RemoveClass("fa-angle-down")
 }
 
 func loadSlideShow() error {
@@ -177,7 +180,7 @@ func loadSlideShow() error {
 		return nil
 	}
 	err = f(doc)
-	template := jQuery("#thumbnail-template")
+	template := jQuery(".template").Find("#thumbnail")
 	preview := jQuery("#preview")
 	for i, _ := range slides {
 		tmpl := template.Clone()
@@ -269,10 +272,12 @@ func cacheSlide(idx int) {
 func fullScreen() {
 	jQuery("#header").SlideUp()
 	jQuery("#footer").Hide()
-	jQuery("#preview").Hide()
+	previewHide()
+	jQuery("#container").Hide()
 }
 
 func showHeader() {
 	jQuery("#header").SlideDown()
+	jQuery("#container").Show()
 	jQuery("#footer").Show()
 }

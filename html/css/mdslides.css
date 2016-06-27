@@ -7,6 +7,10 @@ html, body {
     font-size: 16pt;
 }
 
+body {
+    background: #eeeeee;
+}
+
 #header {
     position: fixed;
     top: 0;
@@ -43,29 +47,19 @@ html, body {
 }
 
 #preview {
-    position: absolute;
-    width: 10%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 15%;
     height: 100%;
     background: #888888;
     overflow-y: scroll;
     overflow-x: hidden;
 }
 
-#container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-}
-
 #content {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%
-    background: #bbbbbb;
-    overflow: auto;
-    z-index: -2;
+    margin: 1em;
+    padding: 1em;
 }
 
 .menu.left {
@@ -96,24 +90,25 @@ html, body {
 }
 
 div.thumbnail {
-    border: 1px solid black;
+    border: 1px solid #444444;
     margin: 5px;
-    width: 102px;
-    height: 77px;
+    width: 15vw;
+    height: 15vh;
     padding: 0;
     overflow: hidden;
 }
 
 iframe.thumbnail {
-    width: 1024px;
-    height: 768px;
+    border: 0;
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
-/*    zoom: 0.25;
-    -moz-transform: scale(0.25);
+/*     zoom: 0.5; */
+    -moz-transform: scale(0.15);
     -moz-transform-origin: 0 0;
-    -o-transform: scale(0.25);
+    -o-transform: scale(0.15);
     -o-transform-origin: 0 0;
-    -webkit-transform: scale(0.25);
-    -webkit-transform-origin: 0 0;*/
-    background: #bbbbbb;
+    -webkit-transform: scale(0.15);
+    -webkit-transform-origin: 0 0;
+    background: #eeeeee;
 }

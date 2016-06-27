@@ -19,6 +19,16 @@ html, body {
     font-size: 1.25em;
     font-weight: bold;
     text-align: center;
+    z-index: 1;
+}
+
+#handle {
+    position: fixed;
+    top: 0
+    height: 5%;
+    width: 100%;
+    overflow: hidden;
+    z-index: 0;
 }
 
 #footer {
@@ -32,28 +42,30 @@ html, body {
     text-align: center;
 }
 
+#preview {
+    position: absolute;
+    width: 10%;
+    height: 100%;
+    background: #888888;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
 #container {
     position: absolute;
     width: 100%;
     height: 100%;
 }
 
-#preview {
-    position: absolute;
-    left: 0;
-    width: 10%;
-    height: 100%;
-    background: #aaffff;
-    overflow-y: scroll;
-    overflow-x: hidden;
-}
-
 #content {
-    position: absolute;
-    right: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
     height: 100%;
-    background: #ffaaff;
+    width: 100%
+    background: #bbbbbb;
     overflow: auto;
+    z-index: -2;
 }
 
 .menu.left {
@@ -81,4 +93,27 @@ html, body {
 
 .disabled {
     opacity: 0.5;
+}
+
+div.thumbnail {
+    border: 1px solid black;
+    margin: 5px;
+    width: 102px;
+    height: 77px;
+    padding: 0;
+    overflow: hidden;
+}
+
+iframe.thumbnail {
+    width: 1024px;
+    height: 768px;
+    overflow: hidden;
+/*    zoom: 0.25;
+    -moz-transform: scale(0.25);
+    -moz-transform-origin: 0 0;
+    -o-transform: scale(0.25);
+    -o-transform-origin: 0 0;
+    -webkit-transform: scale(0.25);
+    -webkit-transform-origin: 0 0;*/
+    background: #bbbbbb;
 }

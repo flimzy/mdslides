@@ -26,7 +26,7 @@ www/client.js: bundle.js
 # 		--source-map-url /js/client.js.map \
 # 		--in-source-map bundle.js.map
 
-www: www/client.js
+www: www/client.js html/css/mdslides.css html/index.html
 	mkdir -p www
 	cp -a html/* www
 	cp -a vendor/*/* www

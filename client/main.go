@@ -59,9 +59,7 @@ func main() {
 
 			<-slideInitDone // Ensure we've finished loading the slides
 			fmt.Printf("We have %d slides\n", len(slides))
-			if err := displaySlide(0); err != nil {
-				fmt.Printf("Error displaying slide: %s\n", err)
-			}
+			displaySlide(0)
 
 			// Hide the spinner, and show normal content
 			jQuery("#wait-message").Hide()
@@ -183,10 +181,17 @@ func loadSlideShow() error {
 	template := jQuery(".template").Find("#thumbnail")
 	preview := jQuery("#preview")
 	for i, _ := range slides {
-		tmpl := template.Clone()
-		tmpl.SetAttr("id", fmt.Sprintf("preview-%d", i))
-		preview.Append(tmpl)
-		tmpl.Show()
+		thumb := template.Clone()
+		thumb.Find(".overlay").SetHtml(fmt.Sprintf("<h2>%d</h2>", i+1))
+		thumb.SetAttr("id", fmt.Sprintf("preview-%d", i))
+		preview.Append(thumb)
+		thumb.Show()
+		idx := i
+		thumb.On("click", func(event *js.Object) {
+			fmt.Printf("clicked on %d\n", idx)
+			event.Call("preventDefault")
+			displaySlide(idx)
+		})
 	}
 	return err
 }
@@ -228,18 +233,19 @@ func responseToHTML(resp *http.Response) ([]byte, error) {
 	return bluemonday.UGCPolicy().SanitizeBytes(rawHTML), nil
 }
 
-func displaySlide(idx int) error {
+func displaySlide(idx int) {
 	cacheSlide(idx)
 	if idx > 0 {
-		cacheSlide(idx)
+		cacheSlide(idx - 1)
 	}
-	if idx < len(slides) {
+	if idx < len(slides)-1 {
 		cacheSlide(idx + 1)
 	}
-	slide := slides[idx]
-	<-slide.Ready // Wait until the cache is populated
-	jQuery("#content").SetHtml(string(slide.Body))
-	return nil
+	go func() {
+		slide := slides[idx]
+		<-slide.Ready // Wait until the cache is populated
+		jQuery("#content").SetHtml(string(slide.Body))
+	}()
 }
 
 func cacheSlide(idx int) {
@@ -266,7 +272,6 @@ func cacheSlide(idx int) {
 		fmt.Printf("done caching slide #%d\n", idx)
 		close(done)
 		if preview := jQuery(fmt.Sprintf("#preview-%d", idx)); !jquery.IsEmptyObject(preview) {
-			fmt.Printf("found preview div\n")
 			iframe := jQuery(document.Call("createElement", "iframe"))
 			iframe.AddClass("thumbnail")
 			iframe.SetAttr("src", "data:text/html;charset=utf-8,"+url.QueryEscape(string(slide.Body)))

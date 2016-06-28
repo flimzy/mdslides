@@ -60,6 +60,8 @@ body {
 #content {
     margin: 1em;
     padding: 1em;
+    min-height: 100%;
+    width: 100%;
 }
 
 .menu.left {
@@ -90,12 +92,26 @@ body {
 }
 
 div.thumbnail {
-    border: 1px solid #444444;
+    border: 1px solid #2d3e50;
     margin: 5px;
     width: 15vw;
     height: 15vh;
     padding: 0;
     overflow: hidden;
+}
+
+div.thumbnail .overlay {
+    position: absolute;
+    width: 15vw;
+    height: 15vh;
+    text-align: right;
+}
+
+div.thumbnail .overlay h2 {
+    margin: 0px;
+    padding: 5px;
+    color: #2d3e50;
+    text-shadow: 2px 2px #ffffff;
 }
 
 iframe.thumbnail {
@@ -104,11 +120,11 @@ iframe.thumbnail {
     height: 100vh;
     overflow: hidden;
 /*     zoom: 0.5; */
-    -moz-transform: scale(0.15);
+/*    -moz-transform: scale(0.15);
     -moz-transform-origin: 0 0;
     -o-transform: scale(0.15);
     -o-transform-origin: 0 0;
     -webkit-transform: scale(0.15);
-    -webkit-transform-origin: 0 0;
+    -webkit-transform-origin: 0 0;*/
     background: #eeeeee;
 }

@@ -60,8 +60,6 @@ body {
 #content {
     margin: 1em;
     padding: 1em;
-    min-height: 100%;
-    width: 100%;
 }
 
 .menu.left {
@@ -105,6 +103,7 @@ div.thumbnail .overlay {
     width: 15vw;
     height: 15vh;
     text-align: right;
+    z-index: 2;
 }
 
 div.thumbnail .overlay h2 {
@@ -120,11 +119,11 @@ iframe.thumbnail {
     height: 100vh;
     overflow: hidden;
 /*     zoom: 0.5; */
-/*    -moz-transform: scale(0.15);
+    -moz-transform: scale(0.15);
     -moz-transform-origin: 0 0;
     -o-transform: scale(0.15);
     -o-transform-origin: 0 0;
     -webkit-transform: scale(0.15);
-    -webkit-transform-origin: 0 0;*/
+    -webkit-transform-origin: 0 0;
     background: #eeeeee;
 }

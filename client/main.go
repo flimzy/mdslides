@@ -50,6 +50,7 @@ func init() {
 func main() {
 	jQuery(document).Ready(func() {
 		go func() {
+			loadCSS()
 			resize()
 			jQuery(window).Resize(resize)
 			jQuery("#preview-toggle").On("click", previewToggle)
@@ -58,7 +59,6 @@ func main() {
 			jQuery("#handle").On("mouseover", showHeader)
 
 			<-slideInitDone // Ensure we've finished loading the slides
-			fmt.Printf("We have %d slides\n", len(slides))
 			displaySlide(0)
 
 			// Hide the spinner, and show normal content
@@ -66,6 +66,26 @@ func main() {
 			jQuery("#ready-content").Show()
 		}()
 	})
+}
+
+var css string
+var cssInitDone <-chan struct{}
+
+func loadCSS() {
+	done := make(chan struct{})
+	cssInitDone = done
+	go func() {
+		cssurl := jQuery("link[rel='stylesheet']").First().Attr("href")
+		resp, err := fetchURL(cssurl)
+		if err != nil {
+			panic(fmt.Sprintf("Error loading CSS: %s\n", err))
+		}
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(resp.Body)
+		resp.Body.Close()
+		css = buf.String()
+		close(done)
+	}()
 }
 
 func log(message string) {
@@ -214,6 +234,7 @@ func responseToHTML(resp *http.Response) ([]byte, error) {
 	var rawHTML []byte
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
+	resp.Body.Close()
 	switch ct := resp.Header.Get("Content-Type"); {
 	case ct == "text/html" || strings.HasPrefix(ct, "text/html;"):
 		rawHTML = buf.Bytes()
@@ -274,7 +295,21 @@ func cacheSlide(idx int) {
 		if preview := jQuery(fmt.Sprintf("#preview-%d", idx)); !jquery.IsEmptyObject(preview) {
 			iframe := jQuery(document.Call("createElement", "iframe"))
 			iframe.AddClass("thumbnail")
-			iframe.SetAttr("src", "data:text/html;charset=utf-8,"+url.QueryEscape(string(slide.Body)))
+			body := `
+				<html>
+					<head>
+						<style>
+				` + css + `
+						</style>
+					</head>
+					</body>
+						<div id="content">
+			` + string(slide.Body) + `
+						</div>
+					</body>
+				</html>
+			`
+			iframe.SetAttr("src", "data:text/html;charset=utf-8,"+encodeURL(body))
 			preview.Find("iframe.thumbnail").ReplaceWith(iframe)
 		}
 	}()
@@ -291,4 +326,11 @@ func showHeader() {
 	jQuery("#header").SlideDown()
 	jQuery("#container").Show()
 	jQuery("#footer").Show()
+}
+
+// encodeURL encodes a url with spaces as %20, same as JavaScript's native
+// encodeURI, but without relying on JS
+func encodeURL(s string) string {
+	t := &url.URL{Path: s}
+	return t.String()
 }

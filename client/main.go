@@ -207,17 +207,23 @@ func fetchURL(addr string) (*http.Response, error) {
 // If the conversion cannot be completed, it returns an error
 func responseToHTML(resp *http.Response) ([]byte, error) {
 	var rawHTML []byte
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(resp.Body)
 	switch ct := resp.Header.Get("Content-Type"); {
 	case ct == "text/html" || strings.HasPrefix(ct, "text/html;"):
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(resp.Body)
 		rawHTML = buf.Bytes()
 	case ct == "text/markdown" || strings.HasPrefix(ct, "text/markdown;"):
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(resp.Body)
 		rawHTML = blackfriday.MarkdownCommon(buf.Bytes())
 	default:
-		return []byte{}, fmt.Errorf("Unknown content type: %s", ct)
+		fmt.Printf("Trying to detect content type\n")
+		switch ct := http.DetectContentType(buf.Bytes()); {
+		case ct == "text/html" || strings.HasPrefix(ct, "text/html;"):
+			rawHTML = buf.Bytes()
+		case ct == "text/markdown" || strings.HasPrefix(ct, "text/markdown;"):
+			rawHTML = blackfriday.MarkdownCommon(buf.Bytes())
+		default:
+			return []byte{}, fmt.Errorf("Unknown content type: %s", ct)
+		}
 	}
 	return bluemonday.UGCPolicy().SanitizeBytes(rawHTML), nil
 }

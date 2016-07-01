@@ -54,7 +54,7 @@ func main() {
 			resize()
 			jQuery(window).Resize(resize)
 			jQuery("#preview-toggle").On("click", previewToggle)
-			jQuery("#content").On("click", fullScreen)
+			jQuery("#fullscreen").On("click", fullScreen)
 			jQuery("#handle").On("click", showHeader) // For touch screens
 			jQuery("#handle").On("mouseover", showHeader)
 
@@ -97,6 +97,7 @@ func resize() {
 	preview := jQuery("#preview")
 
 	bodyHeight := body.OuterHeight()
+	bodyWidth := body.OuterWidth()
 	headerHeight := jQuery("#header").OuterHeight()
 	footerHeight := jQuery("#footer").OuterHeight()
 
@@ -107,6 +108,18 @@ func resize() {
 	preview.SetCss("top", headerHeight)
 	preview.SetHeight(fmt.Sprintf("%dpx", previewHeight))
 	preview.SetWidth(fmt.Sprintf("%dpx", previewWidth))
+
+	// Set fullscreen switch dimensions
+	fullscreen := jQuery("#fullscreen")
+	fsWidth := bodyWidth
+	if preview.Is(":visible") {
+		fsWidth -= previewWidth
+	}
+	fullscreen.SetCss("top", headerHeight)
+	fullscreen.SetCss("left", bodyWidth-fsWidth)
+	fullscreen.SetHeight(fmt.Sprintf("%dpx", previewHeight))
+	fullscreen.SetWidth(fmt.Sprintf("%dpx", fsWidth))
+	fmt.Printf("New fullscreen switch dimensions: %dx%d @ %dx%d\n", bodyWidth-previewWidth-scrollBarWidth, previewHeight, previewWidth+scrollBarWidth, headerHeight)
 }
 
 func getCSSpx(elem jquery.JQuery, tag string) int {
@@ -132,6 +145,7 @@ func previewHide() {
 	toggle := jQuery("#preview-toggle")
 	toggle.AddClass("fa-angle-down")
 	toggle.RemoveClass("fa-angle-up")
+	resize()
 }
 
 func previewShow() {
@@ -139,6 +153,7 @@ func previewShow() {
 	toggle := jQuery("#preview-toggle")
 	toggle.AddClass("fa-angle-up")
 	toggle.RemoveClass("fa-angle-down")
+	resize()
 }
 
 func loadSlideShow() error {
@@ -319,13 +334,16 @@ func fullScreen() {
 	jQuery("#header").SlideUp()
 	jQuery("#footer").Hide()
 	previewHide()
-	jQuery("#container").Hide()
+	jQuery("#fullscreen").Hide()
 }
 
 func showHeader() {
-	jQuery("#header").SlideDown()
-	jQuery("#container").Show()
-	jQuery("#footer").Show()
+	jQuery("#header").SlideDown(func() {
+		fmt.Printf("done!\n")
+		jQuery("#fullscreen").Show()
+		jQuery("#footer").Show()
+		resize()
+	})
 }
 
 // encodeURL encodes a url with spaces as %20, same as JavaScript's native

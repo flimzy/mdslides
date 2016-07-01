@@ -14,6 +14,12 @@ This is really a very inconsequential introduction. This is mostly just some ran
 - One
 - Two
 - Three
-
- Three needs some explanation.
 - Four
+- Five
+- Six
+- Seven
+  * A
+  * B
+  * C
+- Eight
+- Nine

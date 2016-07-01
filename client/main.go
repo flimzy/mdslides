@@ -33,6 +33,7 @@ type Slide struct {
 }
 
 var slides []*Slide
+var currentSlide int
 var slideInitDone <-chan struct{}
 var scrollBarWidth int = 17 // Better to read this from the browser, but how?
 
@@ -57,6 +58,8 @@ func main() {
 			jQuery("#fullscreen").On("click", fullScreen)
 			jQuery("#handle").On("click", showHeader) // For touch screens
 			jQuery("#handle").On("mouseover", showHeader)
+			jQuery("#nav-prev").On("click", prevSlide)
+			jQuery("#nav-next").On("click", nextSlide)
 
 			<-slideInitDone // Ensure we've finished loading the slides
 			displaySlide(0)
@@ -119,7 +122,6 @@ func resize() {
 	fullscreen.SetCss("left", bodyWidth-fsWidth)
 	fullscreen.SetHeight(fmt.Sprintf("%dpx", previewHeight))
 	fullscreen.SetWidth(fmt.Sprintf("%dpx", fsWidth))
-	fmt.Printf("New fullscreen switch dimensions: %dx%d @ %dx%d\n", bodyWidth-previewWidth-scrollBarWidth, previewHeight, previewWidth+scrollBarWidth, headerHeight)
 }
 
 func getCSSpx(elem jquery.JQuery, tag string) int {
@@ -271,16 +273,37 @@ func responseToHTML(resp *http.Response) ([]byte, error) {
 
 func displaySlide(idx int) {
 	cacheSlide(idx)
+	prev := jQuery("#nav-prev")
+	next := jQuery("#nav-next")
 	if idx > 0 {
 		cacheSlide(idx - 1)
+		prev.RemoveClass("disabled")
+		go func() {
+			slide := slides[idx-1]
+			<-slide.Ready
+			prev.Find("#nav-prev-title").SetHtml(slide.Title)
+		}()
+	} else {
+		prev.AddClass("disabled")
+		prev.Find("#nav-prev-title").SetHtml("Previous")
 	}
 	if idx < len(slides)-1 {
 		cacheSlide(idx + 1)
+		next.RemoveClass("disabled")
+		go func() {
+			slide := slides[idx+1]
+			<-slide.Ready
+			next.Find("#nav-next-title").SetHtml(slide.Title)
+		}()
+	} else {
+		next.AddClass("disabled")
+		next.Find("#nav-next-title").SetHtml("Next")
 	}
 	go func() {
 		slide := slides[idx]
 		<-slide.Ready // Wait until the cache is populated
 		jQuery("#content").SetHtml(string(slide.Body))
+		currentSlide = idx
 	}()
 }
 
@@ -351,4 +374,18 @@ func showHeader() {
 func encodeURL(s string) string {
 	t := &url.URL{Path: s}
 	return t.String()
+}
+
+func prevSlide(event *js.Object) {
+	event.Call("preventDefault")
+	if currentSlide > 0 {
+		displaySlide(currentSlide - 1)
+	}
+}
+
+func nextSlide(event *js.Object) {
+	event.Call("preventDefault")
+	if currentSlide < len(slides)-1 {
+		displaySlide(currentSlide + 1)
+	}
 }

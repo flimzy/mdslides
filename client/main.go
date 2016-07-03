@@ -60,6 +60,7 @@ func main() {
 			jQuery("#handle").On("mouseover", showHeader)
 			jQuery("#nav-prev").On("click", prevSlide)
 			jQuery("#nav-next").On("click", nextSlide)
+			jQuery("#preview").On("scroll", cachePreviews)
 			window.On("keydown", handleKeypress)
 
 			<-slideInitDone // Ensure we've finished loading the slides
@@ -156,7 +157,28 @@ func previewShow() {
 	toggle := jQuery("#preview-toggle")
 	toggle.AddClass("fa-angle-up")
 	toggle.RemoveClass("fa-angle-down")
+	cachePreviews()
 	resize()
+}
+
+func cachePreviews() {
+	preview := jQuery("#preview")
+	top := preview.ScrollTop()
+	bot := top + preview.Height()
+	for _, e := range preview.Find("div.thumbnail").ToArray() {
+		elem := jQuery(e)
+		elemTop := elem.Offset().Top
+		elemBot := elemTop + elem.Height()
+
+		if elemTop <= bot && elemBot >= top {
+			id := elem.Attr("id")
+			idx, err := strconv.Atoi(strings.TrimPrefix(id, "preview-"))
+			if err != nil {
+				panic(fmt.Sprintf("Unexpected id `%s`\n", id))
+			}
+			cacheSlide(idx)
+		}
+	}
 }
 
 func loadSlideShow() error {
@@ -310,9 +332,8 @@ func displaySlide(idx int) {
 
 func cacheSlide(idx int) {
 	slide := slides[idx]
-	if len(slide.Body) != 0 {
-		fmt.Printf("Slide #%d is already cached\n", idx)
-		// Slide is already cached, nothing to do
+	if slide.Ready != nil {
+		// Slide is already cached, or being cached. Nothing to do
 		return
 	}
 	fmt.Printf("Slide #%d needs to be cached\n", idx)

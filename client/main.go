@@ -22,8 +22,8 @@ import (
 // Some spiffy shortcuts
 var jQuery = jquery.NewJQuery
 var jQMobile *js.Object
-var window *js.Object = js.Global
-var document *js.Object = js.Global.Get("document")
+var window jquery.JQuery = jQuery(js.Global)
+var document jquery.JQuery = jQuery(js.Global.Get("document"))
 
 type Slide struct {
 	Address string
@@ -49,17 +49,18 @@ func init() {
 }
 
 func main() {
-	jQuery(document).Ready(func() {
+	document.Ready(func() {
 		go func() {
 			loadCSS()
 			resize()
-			jQuery(window).Resize(resize)
+			window.Resize(resize)
 			jQuery("#preview-toggle").On("click", previewToggle)
 			jQuery("#fullscreen").On("click", fullScreen)
 			jQuery("#handle").On("click", showHeader) // For touch screens
 			jQuery("#handle").On("mouseover", showHeader)
 			jQuery("#nav-prev").On("click", prevSlide)
 			jQuery("#nav-next").On("click", nextSlide)
+			window.On("keydown", handleKeypress)
 
 			<-slideInitDone // Ensure we've finished loading the slides
 			displaySlide(0)
@@ -331,7 +332,7 @@ func cacheSlide(idx int) {
 		fmt.Printf("done caching slide #%d\n", idx)
 		close(done)
 		if preview := jQuery(fmt.Sprintf("#preview-%d", idx)); !jquery.IsEmptyObject(preview) {
-			iframe := jQuery(document.Call("createElement", "iframe"))
+			iframe := jQuery("<iframe></iframe>")
 			iframe.AddClass("thumbnail")
 			body := `
 				<html>
@@ -387,5 +388,22 @@ func nextSlide(event *js.Object) {
 	event.Call("preventDefault")
 	if currentSlide < len(slides)-1 {
 		displaySlide(currentSlide + 1)
+	} else {
+		showHeader()
+	}
+}
+
+func handleKeypress(event *js.Object) {
+	switch event.Get("keyCode").Int() {
+	case 32, 34, 40: // Space, PgDwn, DnArr
+		fullScreen()
+		if window.ScrollTop()+window.Height() == document.Height() {
+			nextSlide(event)
+		}
+	case 33, 38: // PgUp, UpArr
+		fullScreen()
+		if window.ScrollTop() == 0 {
+			prevSlide(event)
+		}
 	}
 }

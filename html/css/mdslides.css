@@ -61,6 +61,10 @@ body {
     padding: 1em;
 }
 
+#content img {
+    padding: 1em;
+}
+
 #fullscreen {
     position: absolute;
     width: 100%;
@@ -132,4 +136,10 @@ iframe.thumbnail {
     -webkit-transform: scale(0.15);
     -webkit-transform-origin: 0 0;
     background: #eeeeee;
+}
+
+code {
+    display: block;
+    background-color: #c6d7e9;
+    padding: 1em;
 }

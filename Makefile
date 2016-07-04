@@ -1,4 +1,8 @@
-serve: www
+ifndef SLIDEDIR
+	SLIDEDIR = slides
+endif
+
+serve: www www/slides
 	go run ./server/*
 
 test: go-test
@@ -26,13 +30,19 @@ www/client.js: bundle.js
 # 		--source-map-url /js/client.js.map \
 # 		--in-source-map bundle.js.map
 
-www: www/client.js html/css/mdslides.css html/index.html
+www: www/client.js html/css/mdslides.css html/index.html js/worker.js
 	mkdir -p www
 	cp -a html/* www
 	cp -a vendor/*/* www
-	cp -a slides www/slides
+	cp js/worker.js www
 
-client.js: node_modules client/main.go client/main.inc.js
+www/slides: $(SLIDEDIR)
+	ln -s $(SLIDEDIR) www/slides
+
+client.js: client/main.go client/main.inc.js
 	gopherjs build client/* -o client.js
 
 all: clean serve
+
+zip: www
+	zip -9r mdslides.zip www

@@ -10,13 +10,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
 	"golang.org/x/net/html"
 
+	"github.com/flimzy/web/worker"
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/jquery"
-	//     "github.com/flimzy/jqeventrouter"
 )
 
 // Some spiffy shortcuts
@@ -36,11 +35,13 @@ var slides []*Slide
 var currentSlide int
 var slideInitDone <-chan struct{}
 var scrollBarWidth int = 17 // Better to read this from the browser, but how?
+var highlighter *worker.Worker
 
 func init() {
 	done := make(chan struct{})
 	slideInitDone = done
 	go func() {
+		highlighter = worker.New("/worker.js")
 		if err := loadSlideShow(); err != nil {
 			panic(fmt.Sprintf("Unable to load slide show: %s", err))
 		}
@@ -80,15 +81,24 @@ func loadCSS() {
 	done := make(chan struct{})
 	cssInitDone = done
 	go func() {
-		cssurl := jQuery("link[rel='stylesheet']").First().Attr("href")
-		resp, err := fetchURL(cssurl)
-		if err != nil {
-			panic(fmt.Sprintf("Error loading CSS: %s\n", err))
+		for _, rel := range jQuery("link[rel='stylesheet']").ToArray() {
+			cssurl := jQuery(rel).Attr("href")
+			if strings.Contains(cssurl, "font-awesome") {
+				continue
+			}
+			resp, err := fetchURL(cssurl)
+			if err != nil {
+				panic(fmt.Sprintf("Error loading CSS: %s\n", err))
+			}
+			buf := new(bytes.Buffer)
+			buf.ReadFrom(resp.Body)
+			resp.Body.Close()
+			css += `
+			<style>
+				` + buf.String() + `
+			</style>
+			`
 		}
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(resp.Body)
-		resp.Body.Close()
-		css = buf.String()
 		close(done)
 	}()
 }
@@ -291,7 +301,7 @@ func responseToHTML(resp *http.Response) ([]byte, error) {
 			return []byte{}, fmt.Errorf("Unknown content type: %s", ct)
 		}
 	}
-	return bluemonday.UGCPolicy().SanitizeBytes(rawHTML), nil
+	return rawHTML, nil
 }
 
 func displaySlide(idx int) {
@@ -349,7 +359,7 @@ func cacheSlide(idx int) {
 		if err != nil {
 			panic(fmt.Sprintf("Error converting slide #%d to HTML: %s", idx, err))
 		}
-		slide.Body = body
+		slide.Body = highlight(body)
 		fmt.Printf("done caching slide #%d\n", idx)
 		close(done)
 		if preview := jQuery(fmt.Sprintf("#preview-%d", idx)); !jquery.IsEmptyObject(preview) {
@@ -358,9 +368,7 @@ func cacheSlide(idx int) {
 			body := `
 				<html>
 					<head>
-						<style>
-				` + css + `
-						</style>
+					` + css + `
 					</head>
 					</body>
 						<div id="content">
@@ -373,6 +381,26 @@ func cacheSlide(idx int) {
 			preview.Find("iframe.thumbnail").ReplaceWith(iframe)
 		}
 	}()
+}
+
+func highlight(in []byte) []byte {
+	content := jQuery("<div>" + string(in) + "</div>")
+	codes := content.Find("code").ToArray()
+	if len(codes) == 0 {
+		fmt.Printf("Nothing to highlight\n")
+		return in
+	}
+	for _, c := range codes {
+		code := jQuery(c)
+		highlighter.Send(code.Html())
+		highlighted, err := highlighter.Receive()
+		if err != nil {
+			fmt.Printf("Error highlighting code snippet: %s\n", err)
+		} else {
+			code.SetHtml(highlighted.(string))
+		}
+	}
+	return []byte(content.Html())
 }
 
 func fullScreen() {

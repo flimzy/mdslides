@@ -143,3 +143,15 @@ code {
     background-color: #c6d7e9;
     padding: 1em;
 }
+
+table {
+    background: #FFFFFF;
+}
+
+table thead th {
+    background: #ced7e3;
+}
+
+table tbody tr:nth-child(2n) {
+    background: #eff2f6;
+}

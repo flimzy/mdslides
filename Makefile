@@ -37,10 +37,11 @@ www: www/client.js html/css/mdslides.css html/index.html js/worker.js
 	cp js/worker.js www
 
 www/slides: $(SLIDEDIR)
+	rm -f www/slides
 	ln -s $(SLIDEDIR) www/slides
 
 client.js: client/main.go client/main.inc.js
-	gopherjs build client/* -o client.js
+	gopherjs build -m client/* -o client.js
 
 all: clean serve
 

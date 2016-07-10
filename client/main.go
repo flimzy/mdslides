@@ -336,6 +336,7 @@ func displaySlide(idx int) {
 		slide := slides[idx]
 		<-slide.Ready // Wait until the cache is populated
 		jQuery("#content").SetHtml(string(slide.Body))
+		window.SetScrollTop(0)
 		currentSlide = idx
 	}()
 }
@@ -412,7 +413,6 @@ func fullScreen() {
 
 func showHeader() {
 	jQuery("#header").SlideDown(func() {
-		fmt.Printf("done!\n")
 		jQuery("#fullscreen").Show()
 		jQuery("#footer").Show()
 		resize()
@@ -430,6 +430,8 @@ func prevSlide(event *js.Object) {
 	event.Call("preventDefault")
 	if currentSlide > 0 {
 		displaySlide(currentSlide - 1)
+	} else {
+		showHeader()
 	}
 }
 
@@ -445,11 +447,12 @@ func nextSlide(event *js.Object) {
 func handleKeypress(event *js.Object) {
 	switch event.Get("keyCode").Int() {
 	case 32, 34, 40: // Space, PgDwn, DnArr
+		fmt.Printf("Page down\n")
 		fullScreen()
-		if window.ScrollTop()+window.Height() == document.Height() {
+		if window.ScrollTop()+window.Height() >= document.Height()-1 { // Subtract one to account for rounding
 			nextSlide(event)
 		}
-	case 33, 38: // PgUp, UpArr
+	case 8, 33, 38: // BkSpc, PgUp, UpArr
 		fullScreen()
 		if window.ScrollTop() == 0 {
 			prevSlide(event)

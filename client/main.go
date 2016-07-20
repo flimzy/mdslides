@@ -393,7 +393,7 @@ func highlight(in []byte) []byte {
 	}
 	for _, c := range codes {
 		code := jQuery(c)
-		highlighter.Send(code.Html())
+		highlighter.Send(html.UnescapeString(code.Html()))
 		highlighted, err := highlighter.Receive()
 		if err != nil {
 			fmt.Printf("Error highlighting code snippet: %s\n", err)

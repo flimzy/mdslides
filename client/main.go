@@ -41,7 +41,7 @@ func init() {
 	done := make(chan struct{})
 	slideInitDone = done
 	go func() {
-		highlighter = worker.New("/worker.js")
+		highlighter = worker.New("worker.js")
 		if err := loadSlideShow(); err != nil {
 			panic(fmt.Sprintf("Unable to load slide show: %s", err))
 		}
@@ -194,7 +194,7 @@ func cachePreviews() {
 func loadSlideShow() error {
 	var err error
 	var htmlDoc []byte
-	for _, addr := range []string{"slides/index.md", "/slides/index.html", "/slides/index.htm", "/slides"} {
+	for _, addr := range []string{"slides/index.md", "slides/index.html", "slides/index.htm", "slides"} {
 		var resp *http.Response
 		resp, err = fetchURL(addr)
 		if err == nil {
@@ -227,7 +227,7 @@ func loadSlideShow() error {
 						return err
 					}
 					if !strings.HasPrefix(addr.Path, "/") && addr.Host == "" {
-						addr.Path = "/slides/" + addr.Path
+						addr.Path = "slides/" + addr.Path
 					}
 					var title string
 					if n.FirstChild.Type == html.TextNode {
@@ -291,7 +291,6 @@ func responseToHTML(resp *http.Response) ([]byte, error) {
 	case ct == "text/markdown" || strings.HasPrefix(ct, "text/markdown;"):
 		rawHTML = blackfriday.MarkdownCommon(buf.Bytes())
 	default:
-		fmt.Printf("Trying to detect content type\n")
 		switch ct := http.DetectContentType(buf.Bytes()); {
 		case ct == "text/html" || strings.HasPrefix(ct, "text/html;"):
 			rawHTML = buf.Bytes()
@@ -388,7 +387,6 @@ func highlight(in []byte) []byte {
 	content := jQuery("<div>" + string(in) + "</div>")
 	codes := content.Find("code").ToArray()
 	if len(codes) == 0 {
-		fmt.Printf("Nothing to highlight\n")
 		return in
 	}
 	for _, c := range codes {
@@ -447,7 +445,6 @@ func nextSlide(event *js.Object) {
 func handleKeypress(event *js.Object) {
 	switch event.Get("keyCode").Int() {
 	case 32, 34, 40: // Space, PgDwn, DnArr
-		fmt.Printf("Page down\n")
 		fullScreen()
 		if window.ScrollTop()+window.Height() >= document.Height()-1 { // Subtract one to account for rounding
 			nextSlide(event)
